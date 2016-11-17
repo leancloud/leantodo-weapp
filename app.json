@@ -1,0 +1,11 @@
+{
+  "pages":[
+    "pages/todos/todos"
+  ],
+  "window":{
+    "backgroundTextStyle":"light",
+    "navigationBarBackgroundColor": "#fbfbfb",
+    "navigationBarTitleText": "LeanTodo",
+    "navigationBarTextStyle":"black"
+  }
+}

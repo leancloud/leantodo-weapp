@@ -1,0 +1,9 @@
+/**app.wxss**/
+.flex-wrap{
+  display: flex;
+  flex-direction: row;
+}
+
+page {
+  background-color: #f2f2f2;
+}
