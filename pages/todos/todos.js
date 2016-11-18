@@ -1,30 +1,15 @@
 const AV = require('../../utils/leancloud-storage');
 const Todo = require('../../todo');
 
-var filters = {
-    all: function (todos) {
-        return todos
-    },
-    active: function (todos) {
-        return todos.filter(function (todo) {
-            return !todo.done
-        })
-    },
-    completed: function (todos) {
-        return todos.filter(function (todo) {
-            return todo.done
-        })
-    }
-}
-
 Page({
     data: {
         todos: [],
         editedTodo: null,
         draft: '',
+        editDraft: null,
     },
-    onLoad: function () {
-        Promise.resolve(AV.User.current()).then(user =>
+    loginAndFetchTodos: function() {
+        return Promise.resolve(AV.User.current()).then(user =>
             user ? (user.isAuthenticated().then(authed => authed ? user : null)) : null
         ).then(user =>
             user ? user : AV.User.loginWithWeapp()
@@ -34,19 +19,27 @@ Page({
                 .equalTo('user', AV.Object.createWithoutData('User', user.id))
                 .descending('createdAt')
                 .find()
-                .then((todos) => {
-                    this.setData({
-                        todos
-                    });
-                });
+                .then(this.setTodos);
         }).catch(error => console.error(error.message));
+    },
+    onLoad: function () {
+        this.loginAndFetchTodos();
+    },
+    onPullDownRefresh: function() {
+        this.loginAndFetchTodos().then(wx.stopPullDownRefresh);
+    },
+    setTodos: function(todos) {
+        const activeTodos = todos.filter(todo => !todo.done);
+        this.setData({
+            todos,
+            activeTodos,
+        });
     },
     updateDraft: function ({
         detail: {
             value
         }
     }) {
-        console.log(value);
         this.setData({
             draft: value
         });
@@ -66,13 +59,25 @@ Page({
             done: false,
             user: AV.User.current()
         }).setACL(acl).save().then((todo) => {
-            this.setData({
-              todos: [todo, ...this.data.todos]
-            });
+            this.setTodos([todo, ...this.data.todos]);
         }).catch(console.error);
         this.setData({
           draft: ''
         });
+    },
+    toggleDone: function({
+        target: {
+            dataset: {
+                id
+            }
+        }
+    }) {
+        const { todos } = this.data;
+        const currentTodo = todos.filter(todo => todo.id === id)[0];
+        currentTodo.done = !currentTodo.done;
+        currentTodo.save()
+            .then(() => this.setTodos(todos))
+            .catch(console.error);
     },
     editTodo: function ({
         target: {
@@ -81,12 +86,44 @@ Page({
             }
         }
     }) {
-        console.log(id);
         this.setData({
+            editDraft: null,
             editedTodo: this.data.todos.filter(todo => todo.id === id)[0]
         });
     },
-    doneEdit: function (e) {
-        console.log(e);
+    updateEditedContent: function ({
+        detail: {
+            value
+        }
+    }) {
+        this.setData({
+            editDraft: value
+        });
+    },
+    doneEdit: function ({
+        target: {
+            dataset: {
+                id
+            }
+        }
+    }) {
+        const { todos, editDraft } = this.data;
+        if (editDraft === null) return;
+        const currentTodo = todos.filter(todo => todo.id === id)[0];
+        if (editDraft === currentTodo.content) return;
+        currentTodo.content = editDraft;
+        currentTodo.save().then(() => {
+            this.setTodos(todos);
+        }).catch(console.error);
+    },
+    removeDone: function() {
+        AV.Object.destroyAll(this.data.todos.filter(todo => todo.done)).then(() => {
+            this.setTodos(this.data.activeTodos);
+        }).catch(console.error);
+    },
+    setting: function() {
+        wx.navigateTo({
+          url: '../setting/setting',
+        });
     }
 })

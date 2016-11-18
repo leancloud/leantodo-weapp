@@ -1,9 +1,11 @@
 {
   "pages":[
-    "pages/todos/todos"
+    "pages/todos/todos",
+    "pages/setting/setting"
   ],
   "window":{
-    "backgroundTextStyle":"light",
+    "enablePullDownRefresh": true,
+    "backgroundTextStyle":"dark",
     "navigationBarBackgroundColor": "#fbfbfb",
     "navigationBarTitleText": "LeanTodo",
     "navigationBarTextStyle":"black"

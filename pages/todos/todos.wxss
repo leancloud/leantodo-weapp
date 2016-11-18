@@ -1,7 +1,6 @@
 .header {
   height: 54px;
   align-items: center;
-  margin-bottom: 4px;
   background-color: #FFF;
 }
 
@@ -23,8 +22,12 @@
   padding: 0 16px;
 }
 
+.todo-list {
+  padding: 4px 6px 48px;
+}
 .done {
   text-decoration: line-through;
+  color: #ccc;
 }
 .todo {
   font-size: 18px;
@@ -32,8 +35,8 @@
   padding: 10px 12px;
   overflow: hidden;
   align-items: center;
-  background-color: #FFF;
-  margin: 1px 6px;
+  background-color: #fff;
+  margin: 1px 0;
   border-radius: 3px;
 }
 .todo-icon {
@@ -49,4 +52,29 @@
 .todo-input {
   font-size: 18px;
   width: 100%;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  height: 44px;
+  width: 100%;
+  line-height: 44px;
+  color: #666;
+  border-top: 1px solid #eee;
+  background: #fff;
+  font-size: 16px;
+  text-align: center;
+}
+.remove-done,
+.setting {
+  color: #1aad19;
+}
+.remove-done {
+  position: absolute;
+  right: 12px;
+}
+.setting {
+  position: absolute;
+  left: 12px;
 }
