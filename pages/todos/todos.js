@@ -117,6 +117,9 @@ Page({
     }
   }) {
     const { todos, editDraft } = this.data;
+    this.setData({
+      editedTodo: {},
+    });
     if (editDraft === null) return;
     const currentTodo = todos.filter(todo => todo.id === id)[0];
     if (editDraft === currentTodo.content) return;
