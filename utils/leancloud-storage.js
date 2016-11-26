@@ -9547,7 +9547,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 data.blob.type = guessedType;
               }
               this._source = Promise.resolve({ data: data.blob, type: guessedType });
-            } else if (typeof File !== "undefined" && data instanceof global.File) {
+            } else if (typeof File !== "undefined" && typeof data !== 'undefined' && data instanceof global.File) {
               if (data.size) {
                 this.attributes.metaData.size = data.size;
               }
