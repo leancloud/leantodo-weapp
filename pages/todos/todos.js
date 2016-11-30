@@ -42,6 +42,8 @@ Page({
       value
     }
   }) {
+    // Android 真机上会诡异地触发多次时 value 为空的事件
+    if (!value) return;
     this.setData({
       draft: value
     });
