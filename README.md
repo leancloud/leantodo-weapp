@@ -8,8 +8,12 @@
 - 如何在登录后设置帐号与密码以供用户在其他平台的 LeanTodo 应用上登录
 - 如何实现下拉刷新
 
-### 本地运行与真机预览
-目前小程序公测阶段暂时无法发布应用从而直接在微信上体验，但仍然可以获取源码通过微信开发者工具本地进行本地运行与真机预览：
+你可以通过微信扫描以下二维码进入 demo。
+
+<img src="https://cloud.githubusercontent.com/assets/175227/21764651/2d63be20-d69f-11e6-8931-9fc4485d06e6.png" alt="LeanTodo Weapp QR" width="250">
+
+### 本地运行
+你也可以获取源码通过微信开发者工具本地进行本地运行：
 
 1. 按照 [文档 - 准备工作](https://leancloud.cn/docs/weapp.html#准备工作) 的说明，完成准备工作。
 2. 按照 [文档 - 一键登录](https://leancloud.cn/docs/weapp.html#一键登录) 的说明，在 LeanCloud 控制台配置小程序的 AppID 与 AppSecret。

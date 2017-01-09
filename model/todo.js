@@ -16,5 +16,5 @@ class Todo extends AV.Object {
   }
 }
 
-AV.Object.register(Todo);
+AV.Object.register(Todo, 'Todo');
 module.exports = Todo;

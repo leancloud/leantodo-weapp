@@ -11,6 +11,6 @@
     </view>
   </view>
   <text wx:if="{{error}}" class="error">{{error}}</text>
-  <text class="hint">通过小程序登录的用户设置、修改用户名密码后可以在 LeanTodo 的其他平台的 App 中登录</text>
+  <text class="hint">通过小程序登录的用户设置、修改用户名密码后可以在 LeanTodo Web 端（https://leancloud.github.io/leantodo-vue/）登录</text>
   <button class="submit" type="primary" disabled="{{!(username || password)}}" bindtap="save">更新</button>
 </view>
