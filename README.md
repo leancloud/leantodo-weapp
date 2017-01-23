@@ -6,6 +6,7 @@
 - 查询结果为一个列表时，如何将其绑定到视图层进行展示以及如何在点击事件中得到对应的数组项
 - 如何自动登录 LeanCloud 用户系统
 - 如何在登录后设置帐号与密码以供用户在其他平台的 LeanTodo 应用上登录
+- 如何实现微信支付（需配合 [后端](https://url.leanapp.cn/weapp-pay-backend)）
 - 如何实现下拉刷新
 
 你可以通过微信扫描以下二维码进入 demo。
@@ -19,6 +20,7 @@
 2. 按照 [文档 - 一键登录](https://leancloud.cn/docs/weapp.html#一键登录) 的说明，在 LeanCloud 控制台配置小程序的 AppID 与 AppSecret。
 3. clone 本项目代码，导入微信 web 开发者工具。
 4. 打开 pages/todos/todos.js，将初始化 SDK 代码（`AV.init()`）中的 `appId` 与 `appKey` 替换为你的 LeanCloud 应用的 AppID 与 AppKey。
+5. 如果要调试打赏（支付）功能，需要先按照 [后端](https://url.leanapp.cn/weapp-pay-backend) repo 的说明将其正确部署到云引擎中。
 
 <img width="375" src="https://cloud.githubusercontent.com/assets/175227/20561252/b2fad728-b1b8-11e6-8d8e-a040bcac3e3c.png"> 
 <img width="375" src="https://cloud.githubusercontent.com/assets/175227/20561251/b2cd82fa-b1b8-11e6-9783-afb868c9103e.png">
