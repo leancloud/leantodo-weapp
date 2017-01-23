@@ -11,3 +11,22 @@ page {
 .tappable:hover {
   opacity: .6;
 }
+
+.container {
+  padding: 4px 12px;
+}
+.form-wrap {
+  border-top: 1px solid #eee;
+  margin: 12px 0;
+}
+
+.hint,
+.error {
+  display: block;
+  margin: 8px 0;
+  color: #888;
+  font-size: 14px;
+}
+.error {
+  color: #e64240;
+}

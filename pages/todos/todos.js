@@ -20,7 +20,6 @@ Page({
         .descending('createdAt')
         .find()
         .then(this.setTodos)
-        .catch(console.error);
     }).catch(error => console.error(error.message));
   },
   onReady: function() {
@@ -127,10 +126,5 @@ Page({
     AV.Object.destroyAll(this.data.todos.filter(todo => todo.done)).then(() => {
       this.setTodos(this.data.activeTodos);
     }).catch(console.error);
-  },
-  setting: function () {
-    wx.navigateTo({
-      url: '../setting/setting',
-    });
   },
 });

@@ -1,0 +1,16 @@
+<view class="container">
+  <view class="form-wrap">
+    <view class="flex-wrap input-wrap">
+      <text class="label">用户名</text>
+      <input value="{{user.username}}" bindinput="updateUsername" id="username" class="account-info-input"/>
+    </view>
+    <view class="flex-wrap input-wrap">
+      <text class="label">新密码</text>
+      <input password bindinput="updatePassword" id="password" class="account-info-input"/>
+    </view>
+  </view>
+  <text wx:if="{{error}}" class="error">{{error}}</text>
+  <button class="submit" type="primary" disabled="{{!(username || password)}}" bindtap="save">更新</button>
+  <text class="hint">通过小程序登录的用户会自动生成一个用户名</text>
+  <text class="hint">修改用户名与密码后可以在 LeanTodo Web 端 (https://leancloud.github.io/leantodo-vue/) 登录</text>
+</view>

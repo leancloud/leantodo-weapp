@@ -1,0 +1,35 @@
+.order {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  margin: 0 -12px;
+  padding: 4px 12px;
+}
+
+.amount {
+  float: left;
+  font-size: 120%;
+  line-height: 180%;
+}
+.time {
+  float: right;
+  line-height: 180%;
+}
+.orderid {
+  display: block;
+  clear: both;
+}
+
+.no-order {
+  text-align: center;
+  font-size: 140%;
+  padding-top: 60px;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  border-top: 1px solid #eee;
+  background: white;
+}

@@ -1,0 +1,20 @@
+<view class="container">
+  <view class="orders">
+    <text class="hint">历史打赏</text>
+    <view class="form-wrap">
+      <block wx:for="{{orders}}" wx:for-item="order" wx:key="objectId">
+        <view class="order">
+          <text class="amount">￥{{order.amount / 100}}</text>
+          <text class="hint time">{{order.paidAt}}</text>   
+          <text class="hint orderid">订单号：{{order.tradeId}}</text>
+        </view>
+      </block>
+      <text wx:if="{{orders.length === 0}}" class="hint no-order">从未打赏</text>
+    </view>
+  </view>
+</view>
+<view class="container footer">
+  <text wx:if="{{error}}" class="error">{{error}}</text>
+  <button type="primary" bindtap="donate">支付 ￥0.01</button>
+  <text class="hint">仅供体验支付流程，打赏不会对功能有任何影响。</text>
+</view>

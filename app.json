@@ -1,6 +1,8 @@
 {
   "pages":[
     "pages/todos/todos",
+    "pages/user/user",
+    "pages/pay/pay",
     "pages/setting/setting"
   ],
   "window":{
