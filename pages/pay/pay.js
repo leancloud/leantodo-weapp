@@ -1,4 +1,4 @@
-const { User, Query, Cloud } = require('../../utils/leancloud-storage');
+const { User, Query, Cloud } = require('../../utils/av-weapp-min');
 const Order = require('../../model/order');
 
 Page({

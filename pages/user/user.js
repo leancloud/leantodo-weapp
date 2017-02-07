@@ -1,4 +1,4 @@
-const { User } = require('../../utils/leancloud-storage');
+const { User } = require('../../utils/av-weapp-min');
 
 Page({
   data: {

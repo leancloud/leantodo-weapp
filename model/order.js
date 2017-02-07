@@ -1,4 +1,4 @@
-const AV = require('../utils/leancloud-storage');
+const AV = require('../utils/av-weapp-min');
 
 class Order extends AV.Object {
   get tradeId() { return this.get('tradeId'); }
