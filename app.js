@@ -1,4 +1,4 @@
-const AV = require('./utils/av-weapp-min');
+const AV = require('./utils/av-live-query-weapp-min');
 
 AV.init({
   appId: 'ozewwcwsyq92g2hommuxqrqzg6847wgl8dtrac6suxzko333',

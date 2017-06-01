@@ -1,4 +1,4 @@
-const { User } = require('../../utils/av-weapp-min');
+const { User } = require('../../utils/av-live-query-weapp-min');
 
 Page({
   data: {
