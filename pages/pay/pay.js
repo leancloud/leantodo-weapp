@@ -23,7 +23,7 @@ Page({
           paidAt: order.paidAt.toLocaleString(),
         }))
       }))
-      .catch(console.error);
+      .catch(error => consolo.error(error.message));
   },
   donate() {
     wx.showToast({
