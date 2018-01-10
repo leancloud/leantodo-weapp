@@ -1,8 +1,6 @@
 # LeanTodo × 微信小程序
 
-<img width="250" src="https://cloud.githubusercontent.com/assets/175227/20561252/b2fad728-b1b8-11e6-8d8e-a040bcac3e3c.png"> 
-<img width="250" src="https://cloud.githubusercontent.com/assets/175227/22677128/4912c060-ed2b-11e6-94d0-5a836de3b109.png">
-<img width="250" src="https://cloud.githubusercontent.com/assets/175227/20561251/b2cd82fa-b1b8-11e6-9783-afb868c9103e.png">
+<img width="250" src="https://cloud.githubusercontent.com/assets/175227/20561252/b2fad728-b1b8-11e6-8d8e-a040bcac3e3c.png"> <img width="250" src="https://cloud.githubusercontent.com/assets/175227/22677128/4912c060-ed2b-11e6-94d0-5a836de3b109.png"> <img width="250" src="https://cloud.githubusercontent.com/assets/175227/20561251/b2cd82fa-b1b8-11e6-9783-afb868c9103e.png">
 
 使用 LeanCloud 存储 SDK 在微信小程序平台上实现的 LeanTodo 应用。通过这个 demo 你可以学到：
 
