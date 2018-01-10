@@ -28,6 +28,6 @@ class Order extends AV.Object {
   get paidAt() { return this.get('paidAt'); }
   set paidAt(value) { this.set('paidAt', value); }
 } 
-AV.Object.register(Order);
+AV.Object.register(Order, 'Order');
 
 module.exports = Order;
