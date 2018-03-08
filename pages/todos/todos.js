@@ -12,7 +12,7 @@ Page({
   login: function() {
     return AV.Promise.resolve(AV.User.current()).then(user =>
       user ? (user.isAuthenticated().then(authed => authed ? user : null)) : null
-    ).then(user => user ? user : AV.User.loginWithWeapp()).catch(error => consolo.error(error.message));
+    ).then(user => user ? user : AV.User.loginWithWeapp()).catch(error => console.error(error.message));
   },
   fetchTodos: function (user) {
     console.log('uid', user.id);
@@ -24,11 +24,11 @@ Page({
       this.subscription = subscription;
       if (this.unbind) this.unbind();
       this.unbind = bind(subscription, todos, setTodos);
-    }).catch(error => consolo.error(error.message));
+    }).catch(error => console.error(error.message));
   },
   onReady: function() {
     console.log('page ready');
-    this.login().then(this.fetchTodos.bind(this)).catch(error => consolo.error(error.message));
+    this.login().then(this.fetchTodos.bind(this)).catch(error => console.error(error.message));
   },
   onUnload: function() {
     this.subscription.unsubscribe();
@@ -37,7 +37,7 @@ Page({
   onPullDownRefresh: function () {
     const user = AV.User.current();
     if (!user) return wx.stopPullDownRefresh();
-    this.fetchTodos(user).catch(error => consolo.error(error.message)).then(wx.stopPullDownRefresh);
+    this.fetchTodos(user).catch(error => console.error(error.message)).then(wx.stopPullDownRefresh);
   },
   setTodos: function (todos) {
     const activeTodos = todos.filter(todo => !todo.done);
@@ -74,7 +74,7 @@ Page({
       user: AV.User.current()
     }).setACL(acl).save().then((todo) => {
       this.setTodos([todo, ...this.data.todos]);
-    }).catch(error => consolo.error(error.message));
+    }).catch(error => console.error(error.message));
     this.setData({
       draft: ''
     });
@@ -91,7 +91,7 @@ Page({
     currentTodo.done = !currentTodo.done;
     currentTodo.save()
       .then(() => this.setTodos(todos))
-      .catch(error => consolo.error(error.message));
+      .catch(error => console.error(error.message));
   },
   editTodo: function ({
     target: {
@@ -131,11 +131,11 @@ Page({
     currentTodo.content = editDraft;
     currentTodo.save().then(() => {
       this.setTodos(todos);
-    }).catch(error => consolo.error(error.message));
+    }).catch(error => console.error(error.message));
   },
   removeDone: function () {
     AV.Object.destroyAll(this.data.todos.filter(todo => todo.done)).then(() => {
       this.setTodos(this.data.activeTodos);
-    }).catch(error => consolo.error(error.message));
+    }).catch(error => console.error(error.message));
   },
 });
