@@ -1,8 +1,10 @@
 const AV = require('../../utils/av-live-query-weapp-min');
 const Todo = require('../../model/todo');
+const { jsonify } = require('../../utils/index');
 const bind = require('../../utils/live-query-binding');
 
 Page({
+  todos: [],
   data: {
     todos: [],
     editedTodo: {},
@@ -15,7 +17,6 @@ Page({
     ).then(user => user ? user : AV.User.loginWithWeapp()).catch(error => console.error(error.message));
   },
   fetchTodos: function (user) {
-    console.log('uid', user.id);
     const query = new AV.Query(Todo)
       .equalTo('user', AV.Object.createWithoutData('User', user.id))
       .descending('createdAt');
@@ -40,11 +41,12 @@ Page({
     this.fetchTodos(user).catch(error => console.error(error.message)).then(wx.stopPullDownRefresh);
   },
   setTodos: function (todos) {
+    this.todos = todos;
     const activeTodos = todos.filter(todo => !todo.done);
-    this.setData({
+    this.setData(jsonify({
       todos,
       activeTodos,
-    });
+    }));
     return todos;
   },
   updateDraft: function ({
@@ -73,7 +75,7 @@ Page({
       done: false,
       user: AV.User.current()
     }).setACL(acl).save().then((todo) => {
-      this.setTodos([todo, ...this.data.todos]);
+      this.setTodos([todo, ...this.todos]);
     }).catch(error => console.error(error.message));
     this.setData({
       draft: ''
@@ -86,7 +88,7 @@ Page({
       }
     }
   }) {
-    const { todos } = this.data;
+    const { todos } = this;
     const currentTodo = todos.filter(todo => todo.id === id)[0];
     currentTodo.done = !currentTodo.done;
     currentTodo.save()
@@ -100,10 +102,10 @@ Page({
       }
     }
   }) {
-    this.setData({
+    this.setData(jsonify({
       editDraft: null,
-      editedTodo: this.data.todos.filter(todo => todo.id === id)[0] || {}
-    });
+      editedTodo: this.todos.filter(todo => todo.id === id)[0] || {}
+    }));
   },
   updateEditedContent: function ({
     detail: {
@@ -134,8 +136,8 @@ Page({
     }).catch(error => console.error(error.message));
   },
   removeDone: function () {
-    AV.Object.destroyAll(this.data.todos.filter(todo => todo.done)).then(() => {
-      this.setTodos(this.data.activeTodos);
+    AV.Object.destroyAll(this.todos.filter(todo => todo.done)).then(() => {
+      this.setTodos(this.todos.filter(todo => !todo.done));
     }).catch(error => console.error(error.message));
   },
 });

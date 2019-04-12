@@ -1,4 +1,5 @@
 const { User } = require('../../utils/av-live-query-weapp-min');
+const { jsonify } = require('../../utils/index');
 
 Page({
   data: {
@@ -8,9 +9,9 @@ Page({
     error: null,
   },
   onLoad: function() {
-    this.setData({
+    this.setData(jsonify({
       user: User.current(),
-    });
+    }));
   },
   updateUsername: function ({
     detail: {

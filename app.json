@@ -5,6 +5,7 @@
     "pages/pay/pay",
     "pages/setting/setting"
   ],
+  "usingComponents": {},
   "window":{
     "enablePullDownRefresh": true,
     "backgroundTextStyle":"dark",
