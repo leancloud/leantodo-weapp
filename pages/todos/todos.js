@@ -42,10 +42,10 @@ Page({
   },
   setTodos: function (todos) {
     this.todos = todos;
-    const activeTodos = todos.filter(todo => !todo.done);
+    const activeCount = todos.filter(todo => !todo.done).length;
     this.setData(jsonify({
       todos,
-      activeTodos,
+      activeCount,
     }));
     return todos;
   },
