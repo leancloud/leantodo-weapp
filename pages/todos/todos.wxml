@@ -1,7 +1,8 @@
 <view class="flex-wrap header">
   <input
     placeholder="添加一个任务" 
-    bindinput="updateDraft" 
+    bindinput="updateDraft"
+    bindconfirm="addTodo"
     value="{{draft}}" 
     class="new-todo"/>
   <text style="display: {{draft ? 'inline': 'none'}}" class="add tappable" ontap="addTodo">添加</text>
