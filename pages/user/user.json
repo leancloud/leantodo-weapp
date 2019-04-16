@@ -1,3 +1,4 @@
 {
-  "navigationBarTitleText": "账户登录设置"
+  "navigationBarTitleText": "账户登录设置",
+  "enablePullDownRefresh": false
 }
