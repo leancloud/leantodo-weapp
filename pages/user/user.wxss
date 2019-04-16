@@ -16,3 +16,6 @@
   height: 100%;
   width: 100%;
 }
+textarea {
+  width: 100%;
+}
