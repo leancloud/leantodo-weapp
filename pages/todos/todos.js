@@ -14,7 +14,9 @@ Page({
   login: function() {
     return AV.Promise.resolve(AV.User.current()).then(user =>
       user ? (user.isAuthenticated().then(authed => authed ? user : null)) : null
-    ).then(user => user ? user : AV.User.loginWithWeapp()).catch(error => console.error(error.message));
+    ).then(user => user ? user : AV.User.loginWithWeapp({
+      preferUnionId: true,
+    })).catch(error => console.error(error.message));
   },
   fetchTodos: function (user) {
     const query = new AV.Query(Todo)
