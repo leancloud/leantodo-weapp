@@ -16,7 +16,7 @@ Page({
       user ? (user.isAuthenticated().then(authed => authed ? user : null)) : null
     ).then(user => user ? user : AV.User.loginWithWeapp({
       preferUnionId: true,
-    })).catch(error => console.error(error.message));
+    }));
   },
   fetchTodos: function (user) {
     const query = new AV.Query(Todo)
@@ -27,7 +27,7 @@ Page({
       this.subscription = subscription;
       if (this.unbind) this.unbind();
       this.unbind = bind(subscription, todos, setTodos);
-    }).catch(error => console.error(error.message));
+    });
   },
   onReady: function() {
     console.log('page ready');
