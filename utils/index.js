@@ -18,3 +18,6 @@ exports.jsonify = target =>
       {}
     )
     : _jsonify(target);
+
+const systemInfo = wx.getSystemInfoSync();
+exports.isQQApp = systemInfo && systemInfo.AppPlatform === 'qq';

@@ -1,4 +1,4 @@
 <view class="form-wrap">
   <navigator url="../user/user" class="navigator user">账户登录</navigator>
-  <navigator url="../pay/pay" class="navigator pay">打赏</navigator>
+  <navigator wx:if="{{donationEnabled}}" url="../pay/pay" class="navigator pay">打赏</navigator>
 </view>
