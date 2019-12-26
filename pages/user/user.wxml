@@ -13,5 +13,5 @@
   <button class="submit" type="primary" disabled="{{!(username || password)}}" bindtap="save">更新</button>
   <text class="hint">通过小程序登录的用户会自动生成一个用户名。修改用户名与密码后可以在 LeanTodo Web 端 (https://leancloud.github.io/leantodo-vue/) 登录</text>
   <text class="hint">当前用户 authData: </text>
-  <textarea class="hint" auto-height='true' disabled maxlength="-1" value="{{authData}}"></textarea>
+  <text class="hint auth-data" space="nbsp">{{authData}}</text>
 </view>
