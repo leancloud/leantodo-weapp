@@ -144,4 +144,10 @@ Page({
       this.setTodos(this.todos.filter(todo => !todo.done));
     }).catch(error => console.error(error.message));
   },
+
+  onShareAppMessage() {
+    if (isQQApp) {
+      wx.showShareMenu();
+    }
+  }
 });
