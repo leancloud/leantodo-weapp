@@ -1,4 +1,4 @@
-const AV = require('../utils/av-live-query-weapp-min');
+const AV = require('../utils/av-live-query-core-min');
 
 class Order extends AV.Object {
   get tradeId() { return this.get('tradeId'); }
