@@ -1068,9 +1068,6 @@ var WS = /** @class */ (function (_super) {
             !(wx.canIUse && wx.canIUse("connectSocket.object.protocols"))) {
             throw new Error("subprotocol not supported in weapp");
         }
-        if (protocol && !Array.isArray(protocol)) {
-            protocol = [protocol];
-        }
         _this = _super.call(this) || this;
         _this._url = url;
         _this._protocol = protocol;
@@ -1084,7 +1081,9 @@ var WS = /** @class */ (function (_super) {
         };
         var socketTask = wx.connectSocket({
             url: url,
-            protocols: protocol,
+            protocols: _this._protocol === undefined || Array.isArray(_this._protocol)
+                ? _this._protocol
+                : [_this._protocol],
             fail: function (error) { return setTimeout(function () { return errorHandler(error); }, 0); }
         });
         _this._socketTask = socketTask;
