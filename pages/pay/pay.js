@@ -1,4 +1,4 @@
-const { User, Query, Cloud } = require('../../utils/av-live-query-weapp-min');
+const { User, Query, Cloud } = require('../../utils/av-live-query-core-min');
 const Order = require('../../model/order');
 
 Page({

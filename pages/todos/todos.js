@@ -1,9 +1,19 @@
-const AV = require('../../utils/av-live-query-weapp-min');
+const AV = require('../../utils/av-live-query-core-min');
 const Todo = require('../../model/todo');
 const { jsonify, isQQApp } = require('../../utils/index');
 const bind = require('../../utils/live-query-binding');
+const { getAuthInfo: getWxAuthInfo } = require('../../utils/platform-adapters-weapp');
+const { getAuthInfo: getQQAuthInfo } = require('../../utils/platform-adapters-qqapp');
 
-const loginFn = (isQQApp ? AV.User.loginWithQQApp : AV.User.loginWithWeapp).bind(AV.User);
+const loginFn = async options => {
+  let authInfo;
+  if (isQQApp) {
+    authInfo = await getQQAuthInfo(options);
+  } else {
+    authInfo = await getWxAuthInfo(options);
+  }
+  return AV.User.loginWithMiniApp(authInfo);
+};
 
 Page({
   todos: [],
