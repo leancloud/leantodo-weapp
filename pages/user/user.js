@@ -1,4 +1,5 @@
-const { User } = require('../../utils/av-live-query-core-min');
+const { db } = getApp();
+const User = db.class('_User');
 
 Page({
   data: {
@@ -11,46 +12,36 @@ Page({
     const user = User.current();
     if (user) {
       this.setData({
-        username: user.get('username'),
-        authData: JSON.stringify(user.get('authData'), undefined, 2),
+        username: user.data.username,
+        authData: JSON.stringify(user.data.authData, undefined, 2),
       });
     }
   },
-  updateUsername: function ({
-    detail: {
-      value
-    }
-  }) {
-    this.setData({
-      username: value
-    });
+  updateUsername: function ({ detail: { value } }) {
+    this.setData({ username: value });
   },
-  updatePassword: function ({
-    detail: {
-      value
-    }
-  }) {
-    this.setData({
-      password: value
-    });
+  updatePassword: function ({ detail: { value } }) {
+    this.setData({ password: value });
   },
-  save: function () {
-    this.setData({
-      error: null,
-    });
+  save: async function () {
+    this.setData({ error: null });
     const { username, password } = this.data;
+    const data = {};
+    if (username) {
+      data.username = username;
+    }
+    if (password) {
+      data.password = password;
+    }
     const user = User.current();
-    if (username) user.set({ username });
-    if (password) user.set({ password });
-    user.save().then(() => {
+    try {
+      await user.update(data);
       wx.showToast({
         title: '更新成功',
         icon: 'success',
       });
-    }).catch(error => {
-      this.setData({
-        error: error.message,
-      });
-    });
+    } catch (error) {
+      this.setData({ error: error.message });
+    }
   }
 });

@@ -21,7 +21,7 @@ PERFORMANCE OF THIS SOFTWARE.
 var extendStatics = function(d, b) {
     extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
     return extendStatics(d, b);
 };
 
@@ -103,7 +103,7 @@ function getLoginCode() {
             fail: function (_a) {
                 var errMsg = _a.errMsg;
                 return reject(new Error(errMsg));
-            }
+            },
         });
     });
 }
@@ -143,35 +143,91 @@ var storage = {
     },
     clear: function () {
         return wx.clearStorageSync();
-    }
+    },
 };
 
-var request = function (url, _a) {
-    var _b = _a === void 0 ? {} : _a, method = _b.method, data = _b.data, headers = _b.headers;
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise */
+
+var extendStatics$1 = function(d, b) {
+    extendStatics$1 = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+    return extendStatics$1(d, b);
+};
+
+function __extends$1(d, b) {
+    extendStatics$1(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+
+var AbortError = /** @class */ (function (_super) {
+    __extends$1(AbortError, _super);
+    function AbortError() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.name = "AbortError";
+        return _this;
+    }
+    return AbortError;
+}(Error));
+
+var request = function (url, options) {
+    if (options === void 0) { options = {}; }
+    var method = options.method, data = options.data, headers = options.headers, signal = options.signal;
+    if (signal === null || signal === void 0 ? void 0 : signal.aborted) {
+        return Promise.reject(new AbortError("Request aborted"));
+    }
     return new Promise(function (resolve, reject) {
-        return wx.request({
+        var task = wx.request({
             url: url,
             method: method,
             data: data,
             header: headers,
-            responseType: "text",
-            success: function (response) {
-                var status = response.statusCode, data = response.data, rest = __rest(response, ["statusCode", "data"]);
-                resolve(__assign(__assign({}, rest), { data: typeof data === "string" ? JSON.parse(data) : data, status: status, ok: !(status >= 400) }));
+            complete: function (res) {
+                if (!res.statusCode) {
+                    reject(new Error(res.errMsg));
+                    return;
+                }
+                resolve({
+                    ok: !(res.statusCode >= 400),
+                    status: res.statusCode,
+                    headers: res.header,
+                    data: res.data,
+                });
             },
-            fail: function (response) {
-                reject(new Error(response.errMsg));
-            }
         });
+        if (signal) {
+            signal.addEventListener("abort", function () {
+                reject(new AbortError("Request aborted"));
+                task.abort();
+            });
+        }
     });
 };
-var upload = function (url, file, _a) {
-    var _b = _a === void 0 ? {} : _a, headers = _b.headers, data = _b.data, onprogress = _b.onprogress;
+var upload = function (url, file, options) {
+    if (options === void 0) { options = {}; }
+    var headers = options.headers, data = options.data, onprogress = options.onprogress, signal = options.signal;
+    if (signal === null || signal === void 0 ? void 0 : signal.aborted) {
+        return Promise.reject(new AbortError("Request aborted"));
+    }
     if (!(file && file.data && file.data.uri)) {
         return Promise.reject(new TypeError("File data must be an object like { uri: localPath }."));
     }
     return new Promise(function (resolve, reject) {
-        var _a;
         var task = wx.uploadFile({
             url: url,
             header: headers,
@@ -184,16 +240,23 @@ var upload = function (url, file, _a) {
             },
             fail: function (response) {
                 reject(new Error(response.errMsg));
-            }
+            },
         });
-        (_a = task === null || task === void 0 ? void 0 : task.onProgressUpdate) === null || _a === void 0 ? void 0 : _a.call(task, function (_a) {
-            var progress = _a.progress, totalBytesSent = _a.totalBytesSent, totalBytesExpectedToSend = _a.totalBytesExpectedToSend;
-            return onprogress === null || onprogress === void 0 ? void 0 : onprogress({
-                percent: progress,
-                loaded: totalBytesSent,
-                total: totalBytesExpectedToSend
+        if (signal) {
+            signal.addEventListener("abort", function () {
+                reject(new AbortError("Request aborted"));
+                task.abort();
             });
-        });
+        }
+        if (onprogress) {
+            task.onProgressUpdate(function (event) {
+                return onprogress({
+                    loaded: event.totalBytesSent,
+                    total: event.totalBytesExpectedToSend,
+                    percent: event.progress,
+                });
+            });
+        }
     });
 };
 
@@ -1056,27 +1119,59 @@ if (
     Object.setPrototypeOf(EventTarget.prototype, window.EventTarget.prototype);
 }
 
-var EVENTS = ["open", "error", "message", "close"];
 var WS = /** @class */ (function (_super) {
     __extends(WS, _super);
     function WS(url, protocol) {
-        var _this = this;
+        var _this = _super.call(this) || this;
+        _this._readyState = WS.CLOSED;
         if (!url) {
             throw new TypeError("Failed to construct 'WebSocket': url required");
         }
+        _this._url = url;
+        _this._protocol = protocol;
+        return _this;
+    }
+    Object.defineProperty(WS.prototype, "url", {
+        get: function () {
+            return this._url;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(WS.prototype, "protocol", {
+        get: function () {
+            return this._protocol;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(WS.prototype, "readyState", {
+        get: function () {
+            return this._readyState;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    WS.CONNECTING = 0;
+    WS.OPEN = 1;
+    WS.CLOSING = 2;
+    WS.CLOSED = 3;
+    return WS;
+}(EventTarget("open", "error", "message", "close")));
+var WechatWS = /** @class */ (function (_super) {
+    __extends(WechatWS, _super);
+    function WechatWS(url, protocol) {
+        var _this = _super.call(this, url, protocol) || this;
         if (protocol &&
             !(wx.canIUse && wx.canIUse("connectSocket.object.protocols"))) {
             throw new Error("subprotocol not supported in weapp");
         }
-        _this = _super.call(this) || this;
-        _this._url = url;
-        _this._protocol = protocol;
         _this._readyState = WS.CONNECTING;
         var errorHandler = function (event) {
             _this._readyState = WS.CLOSED;
             _this.dispatchEvent({
                 type: "error",
-                message: event.errMsg
+                message: event.errMsg,
             });
         };
         var socketTask = wx.connectSocket({
@@ -1084,13 +1179,13 @@ var WS = /** @class */ (function (_super) {
             protocols: _this._protocol === undefined || Array.isArray(_this._protocol)
                 ? _this._protocol
                 : [_this._protocol],
-            fail: function (error) { return setTimeout(function () { return errorHandler(error); }, 0); }
+            fail: function (error) { return setTimeout(function () { return errorHandler(error); }, 0); },
         });
         _this._socketTask = socketTask;
-        socketTask.onOpen(function (event) {
+        socketTask.onOpen(function () {
             _this._readyState = WS.OPEN;
             _this.dispatchEvent({
-                type: "open"
+                type: "open",
             });
         });
         socketTask.onError(errorHandler);
@@ -1098,7 +1193,7 @@ var WS = /** @class */ (function (_super) {
             var data = event.data;
             _this.dispatchEvent({
                 data: data,
-                type: "message"
+                type: "message",
             });
         });
         socketTask.onClose(function (event) {
@@ -1107,33 +1202,12 @@ var WS = /** @class */ (function (_super) {
             _this.dispatchEvent({
                 code: code,
                 reason: reason,
-                type: "close"
+                type: "close",
             });
         });
         return _this;
     }
-    Object.defineProperty(WS.prototype, "url", {
-        get: function () {
-            return this._url;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WS.prototype, "protocol", {
-        get: function () {
-            return this._protocol;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(WS.prototype, "readyState", {
-        get: function () {
-            return this._readyState;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    WS.prototype.close = function () {
+    WechatWS.prototype.close = function () {
         if (this.readyState === WS.CLOSED)
             return;
         if (this.readyState === WS.CONNECTING) {
@@ -1141,7 +1215,7 @@ var WS = /** @class */ (function (_super) {
         }
         this._socketTask.close({});
     };
-    WS.prototype.send = function (data) {
+    WechatWS.prototype.send = function (data) {
         if (this.readyState !== WS.OPEN) {
             throw new Error("INVALID_STATE_ERR");
         }
@@ -1149,19 +1223,20 @@ var WS = /** @class */ (function (_super) {
             throw new TypeError("only String/ArrayBuffer supported");
         }
         this._socketTask.send({
-            data: data
+            data: data,
         });
     };
-    WS.CONNECTING = 0;
-    WS.OPEN = 1;
-    WS.CLOSING = 2;
-    WS.CLOSED = 3;
-    return WS;
-}(EventTarget(EVENTS)));
-var WebSocket = WS;
+    return WechatWS;
+}(WS));
+var WebSocket = WechatWS;
+
+var platformInfo = {
+    name: "Weapp",
+};
 
 exports.WebSocket = WebSocket;
 exports.getAuthInfo = getAuthInfo;
+exports.platformInfo = platformInfo;
 exports.request = request;
 exports.storage = storage;
 exports.upload = upload;

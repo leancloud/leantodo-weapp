@@ -1,5 +1,9 @@
-const { User, Query, Cloud } = require('../../utils/av-live-query-core-min');
-const Order = require('../../model/order');
+import { Cloud as LCCloud } from '../../utils/lc.min';
+
+const { db, lcApp } = getApp();
+const User = db.class('_User');
+const Order = db.class('Order');
+const Cloud = new LCCloud(lcApp);
 
 Page({
   data: {
@@ -10,20 +14,18 @@ Page({
     return this.refreshOrders();
   },
   onPullDownRefresh() {
-    return this.refreshOrders().then(wx.stopPullDownRefresh);
+    return this.refreshOrders().finally(wx.stopPullDownRefresh);
   },
-  refreshOrders() {
-    return new Query(Order)
-      .equalTo('user', User.current())
-      .equalTo('status', 'SUCCESS')
-      .descending('createdAt')
-      .find()
-      .then(orders => this.setData({ 
-        orders: orders.map(order => Object.assign(order.toJSON(), {
-          paidAt: order.paidAt.toLocaleString(),
-        }))
+  async refreshOrders() {
+    const orders = await Order.where('user', '==', User.current())
+      .where('status', '==', 'SUCCESS')
+      .orderBy('createdAt', 'desc')
+      .find();
+    this.setData({ 
+      orders: orders.map(order => Object.assign(order.toJSON(), {
+        paidAt: order.data.paidAt.toLocaleString(),
       }))
-      .catch(error => console.error(error.message));
+    })
   },
   donate() {
     wx.showToast({
@@ -31,7 +33,7 @@ Page({
       icon: 'loading',
       duration: 10000,
       mask: true,
-    })
+    });
     Cloud.run('order').then((data) => {
       wx.hideToast();
       data.success = () => {
@@ -41,12 +43,12 @@ Page({
           duration: 1500,
         });
         setTimeout(this.refreshOrders.bind(this), 1500);
-      }
+      };
       data.fail = ({errMsg}) => this.setData({ error: errMsg });
       wx.requestPayment(data);
     }).catch(error => {
       this.setData({ error: error.message });
       wx.hideToast();
-    })
+    });
   }
 });
