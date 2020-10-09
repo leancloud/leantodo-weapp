@@ -1,8 +1,15 @@
 import * as LC from './lib/lc.min';
-import * as adapters from './lib/platform-adapters-weapp';
+import * as wxAdapters from './lib/platform-adapters-weapp';
+import * as qqAdapters from './lib/platform-adapters-qqapp';
 import { LiveQuery } from './lib/live-query.min';
+import { isQQApp } from './utils/index';
 
-LC.setAdapters(adapters);
+if (isQQApp) {
+  LC.setAdapters(qqAdapters);
+} else {
+  LC.setAdapters(wxAdapters);
+}
+
 LC.use(LiveQuery);
 
 LC.init({
