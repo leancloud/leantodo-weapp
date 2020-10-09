@@ -1,6 +1,3 @@
-const { db } = getApp();
-const User = db.class('_User');
-
 Page({
   data: {
     username: '',
@@ -9,7 +6,7 @@ Page({
     authData: '',
   },
   onLoad: function() {
-    const user = User.current();
+    const user = LC.User.current();
     if (user) {
       this.setData({
         username: user.data.username,
@@ -33,7 +30,7 @@ Page({
     if (password) {
       data.password = password;
     }
-    const user = User.current();
+    const user = LC.User.current();
     try {
       await user.update(data);
       wx.showToast({

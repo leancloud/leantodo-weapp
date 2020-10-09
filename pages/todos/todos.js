@@ -1,10 +1,6 @@
 import { isQQApp } from '../../utils/index';
 import bind from '../../utils/live-query-binding';
-import { ACL } from '../../utils/lc.min';
-
-const { db } = getApp();
-const User = db.class('_User');
-const Todo = db.class('Todo');
+import * as LC from '../../lib/lc.min';
 
 Page({
   todos: [],
@@ -15,16 +11,18 @@ Page({
     editDraft: null,
   },
   login: async function() {
-    if (User.current()) {
-      const currentUser = User.current();
+    if (LC.User.current()) {
+      const currentUser = LC.User.current();
       if (await currentUser.isAuthenticated()) {
         return currentUser;
       }
     }
-    return User.logInWithMiniApp({ preferUnionId: true });
+    return LC.User.loginWithMiniApp({ preferUnionId: true });
   },
   fetchTodos: async function (user) {
-    const query = Todo.where('user', '==', user).orderBy('createdAt', 'desc');
+    const query = LC.CLASS('Todo')
+      .where('user', '==', user)
+      .orderBy('createdAt', 'desc');
     const todos = await query.find();
     this.setTodos(todos);
 
@@ -41,7 +39,7 @@ Page({
     this.subscription.unsubscribe();
   },
   onPullDownRefresh: function () {
-    const user = User.current();
+    const user = LC.User.current();
     if (!user) return wx.stopPullDownRefresh();
     this.fetchTodos(user).finally(wx.stopPullDownRefresh);
   },
@@ -64,15 +62,16 @@ Page({
     if (!value) {
       return;
     }
-    const acl = new ACL();
-    acl.allow(User.current(), 'read');
-    acl.allow(User.current(), 'write');
-    const todo = await Todo.add({
-      content: value,
-      done: false,
-      user: User.current(),
-      ACL: acl,
-    });
+    const acl = new LC.ACL();
+    acl.allow(LC.User.current(), 'read');
+    acl.allow(LC.User.current(), 'write');
+    const todo = await LC.CLASS('Todo')
+      .add({
+        content: value,
+        done: false,
+        user: LC.User.current(),
+        ACL: acl,
+      });
     this.setTodos([todo, ...this.todos]);
     this.setData({ draft: '' });
   },

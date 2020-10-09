@@ -1,9 +1,4 @@
-import { Cloud as LCCloud } from '../../utils/lc.min';
-
-const { db, lcApp } = getApp();
-const User = db.class('_User');
-const Order = db.class('Order');
-const Cloud = new LCCloud(lcApp);
+import * as LC from '../../lib/lc.min';
 
 Page({
   data: {
@@ -17,7 +12,8 @@ Page({
     return this.refreshOrders().finally(wx.stopPullDownRefresh);
   },
   async refreshOrders() {
-    const orders = await Order.where('user', '==', User.current())
+    const orders = await LC.CLASS('Order')
+      .where('user', '==', LC.User.current())
       .where('status', '==', 'SUCCESS')
       .orderBy('createdAt', 'desc')
       .find();
@@ -34,7 +30,7 @@ Page({
       duration: 10000,
       mask: true,
     });
-    Cloud.run('order').then((data) => {
+    LC.Cloud.run('order').then((data) => {
       wx.hideToast();
       data.success = () => {
         wx.showToast({
