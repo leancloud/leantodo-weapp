@@ -1,19 +1,6 @@
-const AV = require('../../utils/av-live-query-core-min');
-const Todo = require('../../model/todo');
-const { jsonify, isQQApp } = require('../../utils/index');
-const bind = require('../../utils/live-query-binding');
-const { getAuthInfo: getWxAuthInfo } = require('../../utils/platform-adapters-weapp');
-const { getAuthInfo: getQQAuthInfo } = require('../../utils/platform-adapters-qqapp');
-
-const loginFn = async options => {
-  let authInfo;
-  if (isQQApp) {
-    authInfo = await getQQAuthInfo(options);
-  } else {
-    authInfo = await getWxAuthInfo(options);
-  }
-  return AV.User.loginWithMiniApp(authInfo);
-};
+import { isQQApp } from '../../utils/index';
+import bind from '../../utils/live-query-binding';
+import * as LC from '../../lib/lc.min';
 
 Page({
   todos: [],
@@ -23,138 +10,104 @@ Page({
     draft: '',
     editDraft: null,
   },
-  login: function() {
-    return AV.Promise.resolve(AV.User.current()).then(user =>
-      user ? (user.isAuthenticated().then(authed => authed ? user : null)) : null
-    ).then(user => user ? user : loginFn({
-      preferUnionId: true,
-    }));
+  login: async function() {
+    if (LC.User.current()) {
+      const currentUser = LC.User.current();
+      if (await currentUser.isAuthenticated()) {
+        return currentUser;
+      }
+    }
+    return LC.User.loginWithMiniApp({ preferUnionId: true });
   },
-  fetchTodos: function (user) {
-    const query = new AV.Query(Todo)
-      .equalTo('user', AV.Object.createWithoutData('User', user.id))
-      .descending('createdAt');
-    const setTodos = this.setTodos.bind(this);
-    return AV.Promise.all([query.find().then(setTodos), query.subscribe()]).then(([todos, subscription]) => {
-      this.subscription = subscription;
-      if (this.unbind) this.unbind();
-      this.unbind = bind(subscription, todos, setTodos);
-    });
+  fetchTodos: async function (user) {
+    const query = LC.CLASS('Todo')
+      .where('user', '==', user)
+      .orderBy('createdAt', 'desc');
+    const todos = await query.find();
+    this.setTodos(todos);
+
+    const subscription = await query.subscribe();
+    if (this.unbind) this.unbind();
+    this.subscription = subscription;
+    this.unbind = bind(subscription, todos, this.setTodos.bind(this));
   },
   onReady: function() {
-    console.log('page ready');
-    this.login().then(this.fetchTodos.bind(this)).catch(error => console.error(error.message));
+    this.login().then(user => this.fetchTodos(user));
   },
   onUnload: function() {
-    this.subscription.unsubscribe();
     this.unbind();
+    this.subscription.unsubscribe();
   },
   onPullDownRefresh: function () {
-    const user = AV.User.current();
+    const user = LC.User.current();
     if (!user) return wx.stopPullDownRefresh();
-    this.fetchTodos(user).catch(error => console.error(error.message)).then(wx.stopPullDownRefresh);
+    this.fetchTodos(user).finally(wx.stopPullDownRefresh);
   },
   setTodos: function (todos) {
     this.todos = todos;
-    const activeCount = todos.filter(todo => !todo.done).length;
-    this.setData(jsonify({
-      todos,
-      activeCount,
-    }));
-    return todos;
-  },
-  updateDraft: function ({
-    detail: {
-      value
-    }
-  }) {
-    // Android 真机上会诡异地触发多次时 value 为空的事件
-    if (!value) return;
+    const activeCount = todos.filter(todo => !todo.data.done).length;
     this.setData({
-      draft: value
+      activeCount,
+      todos: todos.map(todo => todo.toJSON()),
     });
   },
-  addTodo: function () {
-    var value = this.data.draft && this.data.draft.trim()
+  updateDraft: function ({ detail: { value } }) {
+    if (value) {
+      // Android 真机上会诡异地触发多次使 value 为空的事件
+      this.setData({ draft: value });
+    }
+  },
+  addTodo: async function () {
+    const value = this.data.draft && this.data.draft.trim()
     if (!value) {
       return;
     }
-    var acl = new AV.ACL();
-    acl.setPublicReadAccess(false);
-    acl.setPublicWriteAccess(false);
-    acl.setReadAccess(AV.User.current(), true);
-    acl.setWriteAccess(AV.User.current(), true);
-    new Todo({
-      content: value,
-      done: false,
-      user: AV.User.current()
-    }).setACL(acl).save().then((todo) => {
-      this.setTodos([todo, ...this.todos]);
-    }).catch(error => console.error(error.message));
-    this.setData({
-      draft: ''
-    });
+    const acl = new LC.ACL();
+    acl.allow(LC.User.current(), 'read');
+    acl.allow(LC.User.current(), 'write');
+    const todo = await LC.CLASS('Todo')
+      .add({
+        content: value,
+        done: false,
+        user: LC.User.current(),
+        ACL: acl,
+      });
+    this.setTodos([todo, ...this.todos]);
+    this.setData({ draft: '' });
   },
-  toggleDone: function ({
-    target: {
-      dataset: {
-        id
-      }
-    }
-  }) {
+  toggleDone: async function ({ target: { dataset: { id } } }) {
     const { todos } = this;
     const currentTodo = todos.filter(todo => todo.id === id)[0];
-    currentTodo.done = !currentTodo.done;
-    currentTodo.save()
-      .then(() => this.setTodos(todos))
-      .catch(error => console.error(error.message));
+    currentTodo.data.done = !currentTodo.data.done;
+    await currentTodo.update({ done: currentTodo.data.done });
+    this.setTodos(todos);
   },
-  editTodo: function ({
-    target: {
-      dataset: {
-        id
-      }
-    }
-  }) {
-    this.setData(jsonify({
-      editDraft: null,
-      editedTodo: this.todos.filter(todo => todo.id === id)[0] || {}
-    }));
-  },
-  updateEditedContent: function ({
-    detail: {
-      value
-    }
-  }) {
-    this.setData({
-      editDraft: value
-    });
-  },
-  doneEdit: function ({
-    target: {
-      dataset: {
-        id
-      }
-    }
-  }) {
-    const { editDraft } = this.data;
-    this.setData({
-      editedTodo: {},
-    });
-    if (editDraft === null) return;
+  editTodo: function ({ target: { dataset: { id } } }) {
     const currentTodo = this.todos.filter(todo => todo.id === id)[0];
-    if (editDraft === currentTodo.content) return;
-    currentTodo.content = editDraft;
-    currentTodo.save().then(() => {
-      this.setTodos(this.todos);
-    }).catch(error => console.error(error.message));
+    this.setData({
+      editDraft: null,
+      editedTodo: currentTodo.toJSON(),
+    });
   },
-  removeDone: function () {
-    AV.Object.destroyAll(this.todos.filter(todo => todo.done)).then(() => {
-      this.setTodos(this.todos.filter(todo => !todo.done));
-    }).catch(error => console.error(error.message));
+  updateEditedContent: function ({ detail: { value } }) {
+    this.setData({ editDraft: value });
   },
-
+  doneEdit: async function ({ target: { dataset: { id } } }) {
+    this.setData({ editedTodo: {} });
+    const { editDraft } = this.data;
+    const currentTodo = this.todos.filter(todo => todo.id === id)[0];
+    if (editDraft === null || editDraft === currentTodo.data.content) {
+      return;
+    }
+    currentTodo.data.content = editDraft;
+    await currentTodo.update({ content: editDraft });
+    this.setTodos(this.todos);
+  },
+  removeDone: async function () {
+    const doneTodos = this.todos.filter(todo => todo.data.done);
+    await Promise.all(doneTodos.map(todo => todo.delete()));
+    this.setTodos(this.todos.filter(todo => !todo.done));
+  },
   onShareAppMessage() {
     if (isQQApp) {
       wx.showShareMenu();

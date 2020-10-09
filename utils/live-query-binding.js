@@ -1,4 +1,4 @@
-module.exports = (subscription, initialStats, onChange) => {
+export default function bind(subscription, initialStats, onChange) {
   let stats = [...initialStats]
   const remove = value => {
     stats = stats.filter(target => target.id !== value.id)

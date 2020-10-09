@@ -1,4 +1,4 @@
-const { isQQApp } = require('../../utils/index');
+import { isQQApp } from '../../utils/index';
 
 Page({
   data: {

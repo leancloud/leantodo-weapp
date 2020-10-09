@@ -13,5 +13,6 @@
     "navigationBarBackgroundColor": "#fbfbfb",
     "navigationBarTitleText": "LeanTodo",
     "navigationBarTextStyle": "black"
-  }
+  },
+  "sitemapLocation": "sitemap.json"
 }
