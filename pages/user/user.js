@@ -1,3 +1,5 @@
+import AV from '../../lib/av-live-query-core';
+
 Page({
   data: {
     username: '',
@@ -6,11 +8,11 @@ Page({
     authData: '',
   },
   onLoad: function() {
-    const user = LC.User.current();
+    const user = AV.User.current();
     if (user) {
       this.setData({
-        username: user.data.username,
-        authData: JSON.stringify(user.data.authData, undefined, 2),
+        username: user.getUsername(),
+        authData: JSON.stringify(user.get('authData'), undefined, 2),
       });
     }
   },
@@ -22,17 +24,16 @@ Page({
   },
   save: async function () {
     this.setData({ error: null });
+    const user = AV.User.current();
     const { username, password } = this.data;
-    const data = {};
     if (username) {
-      data.username = username;
+      user.set('username', username);
     }
     if (password) {
-      data.password = password;
+      user.set('password', password);
     }
-    const user = LC.User.current();
     try {
-      await user.update(data);
+      await user.save();
       wx.showToast({
         title: '更新成功',
         icon: 'success',
