@@ -1,4 +1,4 @@
-import * as LC from '../../lib/lc.min';
+import AV from '../../lib/av-live-query-core';
 
 Page({
   data: {
@@ -12,14 +12,14 @@ Page({
     return this.refreshOrders().finally(wx.stopPullDownRefresh);
   },
   async refreshOrders() {
-    const orders = await LC.CLASS('Order')
-      .where('user', '==', LC.User.current())
-      .where('status', '==', 'SUCCESS')
-      .orderBy('createdAt', 'desc')
+    const orders = await new AV.Query('Order')
+      .equalTo('user', AV.User.current())
+      .equalTo('status', 'SUCCESS')
+      .descending('createdAt')
       .find();
-    this.setData({ 
+    this.setData({
       orders: orders.map(order => Object.assign(order.toJSON(), {
-        paidAt: order.data.paidAt.toLocaleString(),
+        paidAt: order.get('paidAt').toLocaleString(),
       }))
     })
   },
@@ -30,7 +30,7 @@ Page({
       duration: 10000,
       mask: true,
     });
-    LC.Cloud.run('order').then((data) => {
+    AV.Cloud.run('order').then((data) => {
       wx.hideToast();
       data.success = () => {
         wx.showToast({

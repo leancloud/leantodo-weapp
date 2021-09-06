@@ -1,6 +1,6 @@
 import { isQQApp } from '../../utils/index';
 import bind from '../../utils/live-query-binding';
-import * as LC from '../../lib/lc.min';
+import AV from '../../lib/av-live-query-core';
 
 Page({
   todos: [],
@@ -11,18 +11,18 @@ Page({
     editDraft: null,
   },
   login: async function() {
-    if (LC.User.current()) {
-      const currentUser = LC.User.current();
+    if (AV.User.current()) {
+      const currentUser = AV.User.current();
       if (await currentUser.isAuthenticated()) {
         return currentUser;
       }
     }
-    return LC.User.loginWithMiniApp({ preferUnionId: true });
+    return AV.User.loginWithWeapp({ preferUnionId: true });
   },
   fetchTodos: async function (user) {
-    const query = LC.CLASS('Todo')
-      .where('user', '==', user)
-      .orderBy('createdAt', 'desc');
+    const query = new AV.Query('Todo')
+      .equalTo('user', user)
+      .descending('createdAt');
     const todos = await query.find();
     this.setTodos(todos);
 
@@ -39,13 +39,13 @@ Page({
     this.subscription.unsubscribe();
   },
   onPullDownRefresh: function () {
-    const user = LC.User.current();
+    const user = AV.User.current();
     if (!user) return wx.stopPullDownRefresh();
     this.fetchTodos(user).finally(wx.stopPullDownRefresh);
   },
   setTodos: function (todos) {
     this.todos = todos;
-    const activeCount = todos.filter(todo => !todo.data.done).length;
+    const activeCount = todos.filter(todo => !todo.get('done')).length;
     this.setData({
       activeCount,
       todos: todos.map(todo => todo.toJSON()),
@@ -62,28 +62,27 @@ Page({
     if (!value) {
       return;
     }
-    const acl = new LC.ACL();
-    acl.allow(LC.User.current(), 'read');
-    acl.allow(LC.User.current(), 'write');
-    const todo = await LC.CLASS('Todo')
-      .add({
-        content: value,
-        done: false,
-        user: LC.User.current(),
-        ACL: acl,
-      });
+    const acl = new AV.ACL();
+    acl.setReadAccess(AV.User.current(), true);
+    acl.setWriteAccess(AV.User.current(), true);
+    const todo = new AV.Object('Todo');
+    todo.setACL(acl);
+    await todo.save({
+      content: value,
+      done: false,
+      user: AV.User.current(),
+    });
     this.setTodos([todo, ...this.todos]);
     this.setData({ draft: '' });
   },
   toggleDone: async function ({ target: { dataset: { id } } }) {
-    const { todos } = this;
-    const currentTodo = todos.filter(todo => todo.id === id)[0];
-    currentTodo.data.done = !currentTodo.data.done;
-    await currentTodo.update({ done: currentTodo.data.done });
+    const currentTodo = this.todos.find(todo => todo.id === id);
+    currentTodo.set('done', !currentTodo.get('done'));
+    await currentTodo.save();
     this.setTodos(todos);
   },
   editTodo: function ({ target: { dataset: { id } } }) {
-    const currentTodo = this.todos.filter(todo => todo.id === id)[0];
+    const currentTodo = this.todos.find(todo => todo.id === id);
     this.setData({
       editDraft: null,
       editedTodo: currentTodo.toJSON(),
@@ -95,18 +94,18 @@ Page({
   doneEdit: async function ({ target: { dataset: { id } } }) {
     this.setData({ editedTodo: {} });
     const { editDraft } = this.data;
-    const currentTodo = this.todos.filter(todo => todo.id === id)[0];
-    if (editDraft === null || editDraft === currentTodo.data.content) {
+    const currentTodo = this.todos.find(todo => todo.id === id);
+    if (editDraft === null || editDraft === currentTodo.get('content')) {
       return;
     }
-    currentTodo.data.content = editDraft;
-    await currentTodo.update({ content: editDraft });
+    currentTodo.set('content', editDraft);
+    await currentTodo.save();
     this.setTodos(this.todos);
   },
   removeDone: async function () {
-    const doneTodos = this.todos.filter(todo => todo.data.done);
-    await Promise.all(doneTodos.map(todo => todo.delete()));
-    this.setTodos(this.todos.filter(todo => !todo.done));
+    const doneTodos = this.todos.filter(todo => todo.get('done'));
+    await AV.Object.destroyAll(doneTodos);
+    this.setTodos(this.todos.filter(todo => !todo.get('done')));
   },
   onShareAppMessage() {
     if (isQQApp) {
